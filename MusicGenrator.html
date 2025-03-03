@@ -1,0 +1,178 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Generator Tool</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header>
+        <h1>🎵 AI Music Generator</h1>
+    </header>
+
+    <main>
+        <div class="input-container">
+            <select id="musicCategory">
+                <option value="alternative">Alternative</option>
+                <option value="hip hop">Hip Hop</option>
+                <option value="indie pop">Indie Pop</option>
+                <option value="trap beat">Trap Beat</option>
+                <option value="afrobeats">Afrobeats</option>
+                <option value="latin pop">Latin Pop</option>
+                <option value="metal">Metal</option>
+                <option value="folk">Folk</option>
+                <option value="flamenco">Flamenco</option>
+                <option value="ska">Ska</option>
+                <option value="lo fi">Lo fi</option>
+                <option value="tecno">Tecno</option>
+                <option value="house">House</option>
+                <option value="dubstep">Dubstep</option>
+                <option value="grunge">Grunge</option>
+                <option value="alternative rock">Alternative Rock</option>
+                <option value="punk rock">Punk Rock</option>
+                <option value="hard rock">Hard Rock</option>
+                <option value="classic rock">Classic Rock</option>
+                <option value="boom bap">Boom Bap</option>
+                <option value="blues">Blues</option>
+                <option value="jazz">Jazz</option>
+                <option value="drill dark">Drill Dark</option>
+                <option value="bollywood type">Bollywood Type</option>
+                <option value="electronic dance music">Electronic Dance Music</option>
+                <option value="r&b">R&b</option>
+                <option value="bass type">Bass Type</option>
+                <option value="g-Funk">G-Funk</option>
+                <option value="desi hip-hop">Desi Hip-hop</option>
+                <option value="bhangra">Bhangra</option>
+            </select>
+            <button id="generateBtn">🎶 Generate Music</button>
+        </div>
+
+        <div id="loading">⏳ Loading...</div>
+        <div id="musicList"></div>
+    </main>
+
+    <footer>
+        <p>© 2025 Music Generator | Powered by Shahrukh Malik</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html><style>body {
+    font-family: Arial, sans-serif;
+    background-color: #121212;
+    color: white;
+    text-align: center;
+    margin: 0;
+}
+
+header {
+    background: linear-gradient(90deg, #ff416c, #ff4b2b);
+    padding: 10px;
+    font-size: 10px;
+}
+
+.input-container {
+    margin: 20px;
+}
+
+select, button {
+    padding: 10px;
+    font-size: 16px;
+    margin: 5px;
+}
+
+button {
+    background-color: #ff4b2b;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #ff1e56;
+}
+
+#loading {
+    display: none;
+    font-size: 18px;
+}
+
+#musicList {
+    margin: 20px;
+}
+
+.music-item {
+    background: #222;
+    padding: 15px;
+    margin: 10px auto;
+    width: 80%;
+    border-radius: 10px;
+}
+
+footer {
+    background: #333;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}</style><script>const API_KEY = "x6N6TuAJThmP8pOH9PhhUFpvNX9BtfQUK9CezI6B"; // Replace with your FreeSound API Key
+const generateBtn = document.getElementById("generateBtn");
+const musicCategory = document.getElementById("musicCategory");
+const musicList = document.getElementById("musicList");
+const loading = document.getElementById("loading");
+
+generateBtn.addEventListener("click", async () => {
+    const query = musicCategory.value.trim();
+    musicList.innerHTML = "";
+    loading.style.display = "block";
+
+    const searchUrl = `https://freesound.org/apiv2/search/text/?query=${query}&token=${API_KEY}`;
+
+    try {
+        const searchResponse = await fetch(searchUrl);
+        if (!searchResponse.ok) throw new Error(`HTTP Error: ${searchResponse.status}`);
+
+        const searchData = await searchResponse.json();
+        loading.style.display = "none";
+
+        if (searchData.results.length === 0) {
+            musicList.innerHTML = "<p>No results found. Try another category!</p>";
+            return;
+        }
+
+        searchData.results.slice(0, 5).forEach(async (sound) => {
+            const soundUrl = `https://freesound.org/apiv2/sounds/${sound.id}/?token=${API_KEY}`;
+            
+            try {
+                const soundResponse = await fetch(soundUrl);
+                if (!soundResponse.ok) throw new Error(`HTTP Error: ${soundResponse.status}`);
+
+                const soundData = await soundResponse.json();
+                const previewUrl = soundData.previews["preview-hq-mp3"];
+
+                if (previewUrl) {
+                    const soundDiv = document.createElement("div");
+                    soundDiv.classList.add("music-item");
+                    soundDiv.innerHTML = `
+                        <p>🎵 ${sound.name} (by ${sound.username})</p>
+                        <audio controls>
+                            <source src="${previewUrl}" type="audio/mpeg">
+                        </audio>
+                        <a href="${previewUrl}" download class="download-btn">⬇️ Download</a>
+                        <p><a href="${sound.license}" target="_blank">License Info</a></p>
+                    `;
+                    musicList.appendChild(soundDiv);
+                }
+            } catch (error) {
+                console.error("Error fetching sound details:", error);
+            }
+        });
+
+    } catch (error) {
+        loading.style.display = "none";
+        console.error("Error fetching music:", error);
+        musicList.innerHTML = `<p>Error: ${error.message}</p>`;
+    }
+});</script>
